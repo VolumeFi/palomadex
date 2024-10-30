@@ -8,7 +8,6 @@ Multi pool type automated market-maker (AMM) protocol powered by smart contracts
 |----------------------------------------------------|---------------------------------------------------------------------|
 | [`factory`](contracts/factory)                     | Pool creation factory                                               |
 | [`pair`](contracts/pair)                           | Pair with x*y=k curve                                               |
-| [`pair_concentrated`](contracts/pair_concentrated) | Passive Concentrated Liquidity pair inspired by Curve v2 whitepaper |
 | [`pair_stable`](contracts/pair_stable)             | Pair with stableswap invariant curve                                |
 | [`router`](contracts/router)                       | Multi-hop trade router                                              |
 
