@@ -1,6 +1,7 @@
 use cosmwasm_std::testing::{mock_env, mock_info, MOCK_CONTRACT_ADDR};
 use cosmwasm_std::{
-    attr, to_json_binary, Addr, BankMsg, Binary, BlockInfo, Coin, CosmosMsg, Decimal, DepsMut, Env, Reply, ReplyOn, Response, StdError, SubMsg, SubMsgResponse, SubMsgResult, Timestamp, Uint128, WasmMsg
+    attr, to_json_binary, Addr, BankMsg, BlockInfo, Coin, CosmosMsg, Decimal, DepsMut, Env, Reply,
+    ReplyOn, Response, StdError, SubMsg, SubMsgResponse, SubMsgResult, Timestamp, Uint128, WasmMsg,
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, MinterResponse};
 use proptest::prelude::*;
@@ -49,10 +50,7 @@ fn store_liquidity_token(deps: DepsMut, msg_id: u64, contract_addr: String) {
         result: SubMsgResult::Ok(SubMsgResponse {
             events: vec![],
             data: Some(encoded_instantiate_reply.into()),
-            msg_responses: vec![],
         }),
-        payload: Binary::default(),
-        gas_used: 0,
     };
 
     let _res = reply(deps, mock_env(), reply_msg.clone()).unwrap();
@@ -111,7 +109,6 @@ fn proper_initialization() {
             id: 1,
             gas_limit: None,
             reply_on: ReplyOn::Success,
-            payload: Binary::default(),
         },]
     );
 
@@ -223,7 +220,6 @@ fn provide_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
     assert_eq!(
@@ -242,7 +238,6 @@ fn provide_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
     assert_eq!(
@@ -261,7 +256,6 @@ fn provide_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
 
@@ -341,7 +335,6 @@ fn provide_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
     assert_eq!(
@@ -360,7 +353,6 @@ fn provide_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
 
@@ -701,7 +693,6 @@ fn withdraw_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
     assert_eq!(
@@ -720,7 +711,6 @@ fn withdraw_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
     assert_eq!(
@@ -738,7 +728,6 @@ fn withdraw_liquidity() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         }
     );
 
@@ -823,8 +812,8 @@ fn try_native_to_token() {
     let msg_transfer = res.messages.get(0).expect("no message");
 
     // Current price is 1.5, so expected return without spread is 1000
-    // 952380952 = 20000000000 - (30000000000 * 20000000000) / (30000000000 + 1500000000)
-    let expected_ret_amount = Uint128::new(952_380_952u128);
+    // 952380953 = 20000000000 - (30000000000 * 20000000000) / (30000000000 + 1500000000)
+    let expected_ret_amount = Uint128::new(952_380_953u128);
 
     // 47619047 = 1500000000 * (20000000000 / 30000000000) - 952380952
     let expected_spread_amount = Uint128::new(47619047u128);
@@ -952,7 +941,6 @@ fn try_native_to_token() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         },
         msg_transfer,
     );
@@ -1042,8 +1030,8 @@ fn try_token_to_native() {
     let msg_transfer = res.messages.get(0).expect("no message");
 
     // Current price is 1.5, so expected return without spread is 1000
-    // 952380952,3809524 = 20000000000 - (30000000000 * 20000000000) / (30000000000 + 1500000000)
-    let expected_ret_amount = Uint128::new(952_380_952u128);
+    // 952380953,3809524 = 20000000000 - (30000000000 * 20000000000) / (30000000000 + 1500000000)
+    let expected_ret_amount = Uint128::new(952_380_953u128);
 
     // 47619047 = 1500000000 * (20000000000 / 30000000000) - 952380952,3809524
     let expected_spread_amount = Uint128::new(47619047u128);
@@ -1142,7 +1130,6 @@ fn try_token_to_native() {
             id: 0,
             gas_limit: None,
             reply_on: ReplyOn::Never,
-            payload: Binary::default(),
         },
         msg_transfer,
     );
@@ -1460,11 +1447,11 @@ fn mock_env_with_block_time(time: u64) -> Env {
 #[test]
 fn compute_swap_rounding() {
     let offer_pool = Uint128::from(5_000_000_000_000_u128);
-    let ask_pool = Uint128::from(1_000_000_000_u128);
-    let return_amount = Uint128::from(0_u128);
+    let ask_pool = Uint128::from(5_000_000_000_000_u128);
+    let return_amount = Uint128::from(100_u128);
     let spread_amount = Uint128::from(0_u128);
     let commission_amount = Uint128::from(0_u128);
-    let offer_amount = Uint128::from(1_u128);
+    let offer_amount = Uint128::from(100_u128);
 
     assert_eq!(
         compute_swap(offer_pool, ask_pool, offer_amount, Decimal::zero()),

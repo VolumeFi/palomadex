@@ -14,16 +14,16 @@ library = []
 cosmwasm-schema.workspace = true
 cosmwasm-std = { workspace = true, features = ["cosmwasm_1_1"] }
 cw-storage-plus.workspace = true
-cw2.workspace = true
 cw20.workspace = true
 cw-utils.workspace = true
 itertools.workspace = true
 schemars.workspace = true
 serde.workspace = true
 thiserror.workspace = true
-cw-asset = "4.0.0"
+cw-asset = "3.1.1"
 uint = "0.10.0"
+palomadex-circular-buffer = { path = "../circular_buffer" }
 
 [dev-dependencies]
-cw-multi-test = "2.0.0"
+cw-multi-test = "1.2.0"
 test-case = "3.1.0"

@@ -15,11 +15,7 @@ jobs:
         with:
           command: install
           args: cargo-run-script
-      - name: Run cargo optimize
-        uses: actions-rs/cargo@v1
-        with:
-          command: run-script
-          args: optimize
+      - run: ./scripts/build_release.sh
       - name: Get release ID
         id: get_release
         uses: bruceadams/get-release@v1.2.3

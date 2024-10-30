@@ -1,5 +1,5 @@
-use palomadex::{asset::MINIMUM_LIQUIDITY_AMOUNT, pair::MAX_FEE_SHARE_BPS};
 use cosmwasm_std::{OverflowError, StdError};
+use palomadex::{asset::MINIMUM_LIQUIDITY_AMOUNT, pair::MAX_FEE_SHARE_BPS};
 use thiserror::Error;
 
 /// This enum describes pair contract errors

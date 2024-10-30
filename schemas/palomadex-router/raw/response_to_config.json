@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConfigResponse",
+  "description": "This structure describes a custom struct to return a query response containing the base contract configuration.",
+  "type": "object",
+  "required": [
+    "palomadex_factory"
+  ],
+  "properties": {
+    "palomadex_factory": {
+      "description": "The Palomadex factory contract address",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

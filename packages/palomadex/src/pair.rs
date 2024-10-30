@@ -1,5 +1,8 @@
+#[allow(unused_imports)]
+use crate::observation::OracleObservation;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 
+#[allow(unused_imports)]
 use crate::asset::{Asset, AssetInfo, PairInfo};
 
 use cosmwasm_std::{Addr, Binary, Decimal, Decimal256, Uint128, Uint64};
@@ -56,18 +59,6 @@ pub enum ExecuteMsg {
     },
     /// Update the pair configuration
     UpdateConfig { params: Binary },
-    /// ProposeNewOwner creates a proposal to change contract ownership.
-    /// The validity period for the proposal is set in the `expires_in` variable.
-    ProposeNewOwner {
-        /// Newly proposed contract owner
-        owner: String,
-        /// The date after which this proposal expires
-        expires_in: u64,
-    },
-    /// DropOwnershipProposal removes the existing offer to change contract ownership.
-    DropOwnershipProposal {},
-    /// Used to claim contract ownership.
-    ClaimOwnership {},
 }
 
 /// This structure describes a CW20 hook message.
@@ -127,6 +118,9 @@ pub enum QueryMsg {
         asset_info: AssetInfo,
         block_height: Uint64,
     },
+    /// Query price from observations
+    #[returns(OracleObservation)]
+    Observe { seconds_ago: u64 },
 }
 
 /// This struct is used to return a query result with the total amount of LP tokens and assets in a specific pool.
@@ -192,11 +186,6 @@ pub struct CumulativePricesResponse {
     /// The vector contains cumulative prices for each pair of assets in the pool
     pub cumulative_prices: Vec<(AssetInfo, AssetInfo, Uint128)>,
 }
-
-/// This structure describes a migration message.
-/// We currently take no arguments for migrations.
-#[cw_serde]
-pub struct MigrateMsg {}
 
 /// This structure holds XYK pool parameters.
 #[cw_serde]

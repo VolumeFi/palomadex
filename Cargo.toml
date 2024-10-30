@@ -2,19 +2,13 @@
 resolver = "2"
 members = [
     "packages/*",
-    # "contracts/factory",
+    "contracts/factory",
     "contracts/pair",
-    # "contracts/pair_stable",
-    # "contracts/pair_concentrated",
-    # "contracts/pair_astro_converter",
-    # "contracts/pair_transmuter",
-    # #  "contracts/pair_concentrated_inj", TODO: rewrite OB liquidity deployment
-    # "contracts/pair_xyk_sale_tax",
-    # "contracts/router",
-    # "contracts/whitelist",
-    # "contracts/tokenomics/*",
-    # "contracts/periphery/*"
+    "contracts/pair_stable",
+    "contracts/router",
 ]
+
+exclude = ["packages/palomadex_mocks"]
 
 [profile.release]
 opt-level = 3
@@ -28,12 +22,11 @@ incremental = false
 overflow-checks = true
 
 [workspace.dependencies]
-cosmwasm-schema = "2.1.4"
-cosmwasm-std = "2.1.4"
-cw-storage-plus = "2.0.0"
-cw2 = "2.0.0"
-cw20 = "2.0.0"
-cw-utils = "2.0.0"
+cosmwasm-schema = "1.5"
+cosmwasm-std = "1.5"
+cw-storage-plus = "1.2"
+cw20 = "1.1.2"
+cw-utils = "1.0.3"
 itertools = "0.13.0"
 schemars = "0.8.21"
 serde = { version = "1.0.210", default-features = false, features = ["derive"] }

@@ -1,0 +1,13 @@
+[package]
+name = "palomadex-circular-buffer"
+version = "0.1.0"
+edition = "2021"
+authors = ["Volume Finanace"]
+description = "Circular buffer to store time series data in CosmWasm contracts"
+license = "Apache-2.0"
+
+[dependencies]
+cw-storage-plus.workspace = true
+cosmwasm-schema.workspace = true
+cosmwasm-std.workspace = true
+thiserror.workspace = true

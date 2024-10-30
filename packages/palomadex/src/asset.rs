@@ -2,7 +2,9 @@ use std::fmt;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    coin, coins, ensure, to_json_binary, wasm_execute, Addr, Api, BankMsg, Binary, Coin, ConversionOverflowError, CosmosMsg, CustomMsg, CustomQuery, Decimal256, Fraction, MessageInfo, QuerierWrapper, ReplyOn, StdError, StdResult, SubMsg, Uint128, Uint256, WasmMsg
+    coin, coins, ensure, to_json_binary, wasm_execute, Addr, Api, BankMsg, Coin,
+    ConversionOverflowError, CosmosMsg, CustomMsg, CustomQuery, Decimal256, Fraction, MessageInfo,
+    QuerierWrapper, ReplyOn, StdError, StdResult, SubMsg, Uint128, Uint256, WasmMsg,
 };
 use cw20::{Cw20Coin, Cw20CoinVerified, Cw20ExecuteMsg, Cw20QueryMsg, Denom, MinterResponse};
 use cw_asset::{Asset as CwAsset, AssetInfo as CwAssetInfo};
@@ -43,7 +45,7 @@ pub struct DecimalAsset {
 }
 
 impl DecimalAsset {
-    pub fn into_asset(self, precision: impl Into<u32> + Sized) -> StdResult<Asset> {
+    pub fn into_asset(self, precision: impl Into<u32>) -> StdResult<Asset> {
         Ok(Asset {
             info: self.info,
             amount: self.amount.to_uint(precision)?,
@@ -229,7 +231,6 @@ impl Asset {
                     msg: inner_msg.into(),
                     gas_limit: None,
                     reply_on,
-                    payload: Binary::default(),
                 })
             }
             AssetInfo::NativeToken { denom } => {
@@ -244,7 +245,6 @@ impl Asset {
                     msg: bank_msg,
                     gas_limit: None,
                     reply_on,
-                    payload: Binary::default(),
                 })
             }
         }
@@ -354,7 +354,7 @@ impl CoinsExt for Vec<Coin> {
 /// ## Examples
 /// ```
 /// # use cosmwasm_std::Addr;
-/// # use astroport::asset::AssetInfo::{NativeToken, Token};
+/// # use palomadex::asset::AssetInfo::{NativeToken, Token};
 /// Token { contract_addr: Addr::unchecked("stake...") };
 /// NativeToken { denom: String::from("uluna") };
 /// ```
@@ -389,8 +389,6 @@ impl<'a> Prefixer<'a> for &AssetInfo {
 
 impl KeyDeserialize for &AssetInfo {
     type Output = AssetInfo;
-
-    const KEY_ELEMS: u16 = 1;
 
     #[inline(always)]
     fn from_vec(_value: Vec<u8>) -> StdResult<Self::Output> {
@@ -598,7 +596,7 @@ pub fn validate_native_denom(denom: &str) -> StdResult<()> {
     Ok(())
 }
 
-/// This structure stores the main parameters for an Astroport pair
+/// This structure stores the main parameters for an palomadex pair
 #[cw_serde]
 pub struct PairInfo {
     /// Asset information for the assets in the pool
@@ -733,9 +731,9 @@ pub fn token_asset_info(contract_addr: Addr) -> AssetInfo {
 ///
 /// **NOTE**
 /// - this function relies on the fact that chain doesn't allow to mint native tokens in the form of bech32 addresses.
-/// For example, if it is allowed to mint native token `wasm1xxxxxxx` then [`AssetInfo`] will be determined incorrectly;
+///   For example, if it is allowed to mint native token `wasm1xxxxxxx` then [`AssetInfo`] will be determined incorrectly;
 /// - if you intend to test this functionality in cw-multi-test you must implement [`Api`] trait for your test App
-/// with conjunction with [AddressGenerator](https://docs.rs/cw-multi-test/0.17.0/cw_multi_test/trait.AddressGenerator.html)
+///   with conjunction with [AddressGenerator](https://docs.rs/cw-multi-test/0.17.0/cw_multi_test/trait.AddressGenerator.html)
 pub fn determine_asset_info(maybe_asset_info: &str, api: &dyn Api) -> StdResult<AssetInfo> {
     if api.addr_validate(maybe_asset_info).is_ok() {
         Ok(AssetInfo::Token {
@@ -838,7 +836,10 @@ impl Decimal256Ext for Decimal256 {
             .checked_div(10u128.pow(self.decimal_places() - precision).into())?
             .try_into()
             .map_err(|o: ConversionOverflowError| {
-                StdError::generic_err(format!("Error converting from {} to {}", o.source_type, o.target_type))
+                StdError::generic_err(format!(
+                    "Error converting from {} to {}",
+                    o.source_type, o.target_type
+                ))
             })
     }
 

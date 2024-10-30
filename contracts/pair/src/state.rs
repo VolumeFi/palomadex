@@ -1,10 +1,10 @@
+use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{Addr, Uint128};
+use cw_storage_plus::{Item, SnapshotMap};
 use palomadex::{
     asset::{AssetInfo, PairInfo},
     pair::FeeShareConfig,
 };
-use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Uint128};
-use cw_storage_plus::{Item, SnapshotMap};
 
 /// This structure stores the main config parameters for a constant product pair contract.
 #[cw_serde]

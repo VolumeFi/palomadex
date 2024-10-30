@@ -11,6 +11,7 @@ use cosmwasm_std::{
 };
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, MinterResponse};
 
+use cw_utils::parse_instantiate_response_data;
 use palomadex::asset::{
     addr_opt_validate, check_swap_parameters, format_lp_token_name, Asset, AssetInfo, CoinsExt,
     PairInfo, MINIMUM_LIQUIDITY_AMOUNT,
@@ -21,12 +22,11 @@ use palomadex::pair::{
     DEFAULT_SLIPPAGE, MAX_ALLOWED_SLIPPAGE, MAX_FEE_SHARE_BPS,
 };
 use palomadex::pair::{
-    CumulativePricesResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, PoolResponse,
-    QueryMsg, ReverseSimulationResponse, SimulationResponse, TWAP_PRECISION,
+    CumulativePricesResponse, Cw20HookMsg, ExecuteMsg, InstantiateMsg, PoolResponse, QueryMsg,
+    ReverseSimulationResponse, SimulationResponse, TWAP_PRECISION,
 };
 use palomadex::querier::{query_factory_config, query_fee_info, query_supply};
 use palomadex::{token::InstantiateMsg as TokenInstantiateMsg, U256};
-use cw_utils::parse_instantiate_response_data;
 
 use crate::error::ContractError;
 use crate::state::{Config, BALANCES, CONFIG};
@@ -108,7 +108,6 @@ pub fn instantiate(
         id: INSTANTIATE_TOKEN_REPLY_ID,
         gas_limit: None,
         reply_on: ReplyOn::Success,
-        payload: Binary::default(),
     }];
 
     Ok(Response::new().add_submessages(sub_msg).add_attribute(
@@ -132,8 +131,6 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
                 SubMsgResult::Ok(SubMsgResponse {
                     data: Some(data), ..
                 }),
-            gas_used: _,
-            payload: _,
         } => {
             let mut config: Config = CONFIG.load(deps.storage)?;
 
@@ -162,7 +159,7 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
 /// * **ExecuteMsg::UpdateConfig { params: Binary }** Not supported.
 ///
 /// * **ExecuteMsg::Receive(msg)** Receives a message of type [`Cw20ReceiveMsg`] and processes
-/// it depending on the received template.
+///   it depending on the received template.
 ///
 /// * **ExecuteMsg::ProvideLiquidity {
 ///             assets,
@@ -189,14 +186,7 @@ pub fn execute(
             assets,
             slippage_tolerance,
             receiver,
-        } => provide_liquidity(
-            deps,
-            env,
-            info,
-            assets,
-            slippage_tolerance,
-            receiver,
-        ),
+        } => provide_liquidity(deps, env, info, assets, slippage_tolerance, receiver),
         ExecuteMsg::Swap {
             offer_asset,
             belief_price,
@@ -223,7 +213,6 @@ pub fn execute(
             )
         }
         ExecuteMsg::UpdateConfig { params } => update_config(deps, env, info, params),
-        _ => Err(ContractError::NonSupported {}),
     }
 }
 
@@ -292,13 +281,13 @@ pub fn receive_cw20(
 /// * **assets** is an array with assets available in the pool.
 ///
 /// * **slippage_tolerance** is an optional parameter which is used to specify how much
-/// the pool price can move until the provide liquidity transaction goes through.
+///   the pool price can move until the provide liquidity transaction goes through.
 ///
 /// * **auto_stake** is an optional parameter which determines whether the LP tokens minted after
-/// liquidity provision are automatically staked in the Generator contract on behalf of the LP token receiver.
+///   liquidity provision are automatically staked in the Generator contract on behalf of the LP token receiver.
 ///
 /// * **receiver** is an optional parameter which defines the receiver of the LP tokens.
-/// If no custom receiver is specified, the pair will mint LP tokens for the function caller.
+///   If no custom receiver is specified, the pair will mint LP tokens for the function caller.
 ///
 /// NOTE - the address that wants to provide liquidity should approve the pair contract to pull its relevant tokens.
 pub fn provide_liquidity(
@@ -398,11 +387,7 @@ pub fn provide_liquidity(
 
     // Mint LP tokens for the sender or for the receiver (if set)
     let receiver = addr_opt_validate(deps.api, &receiver)?.unwrap_or_else(|| info.sender.clone());
-    messages.extend(mint_liquidity_token_message(
-        &config,
-        &receiver,
-        share,
-    )?);
+    messages.extend(mint_liquidity_token_message(&config, &receiver, share)?);
 
     if config.track_asset_balances {
         for (i, pool) in pools.iter().enumerate() {
@@ -441,7 +426,7 @@ pub fn provide_liquidity(
 /// * **amount** is the amount of LP tokens that will be minted for the recipient.
 ///
 /// * **auto_stake** determines whether the newly minted LP tokens will
-/// be automatically staked in the Generator on behalf of the recipient.
+///   be automatically staked in the Generator on behalf of the recipient.
 fn mint_liquidity_token_message(
     config: &Config,
     recipient: &Addr,
@@ -546,7 +531,9 @@ pub fn get_share_in_assets(pools: &[Asset], amount: Uint128, total_share: Uint12
         .iter()
         .map(|a| Asset {
             info: a.info.clone(),
-            amount: a.amount.multiply_ratio(share_ratio.numerator(), share_ratio.denominator()),
+            amount: a
+                .amount
+                .multiply_ratio(share_ratio.numerator(), share_ratio.denominator()),
         })
         .collect()
 }
@@ -651,7 +638,8 @@ pub fn swap(
     if let Some(fee_share) = config.fee_share.clone() {
         // Calculate the fee share amount from the full commission amount
         let share_fee_rate = Decimal::from_ratio(fee_share.bps, 10000u16);
-        fee_share_amount = fees_commission_amount.multiply_ratio(share_fee_rate.numerator(), share_fee_rate.denominator());
+        fee_share_amount = fees_commission_amount
+            .multiply_ratio(share_fee_rate.numerator(), share_fee_rate.denominator());
 
         if !fee_share_amount.is_zero() {
             // Subtract the fee share amount from the commission
@@ -863,7 +851,10 @@ pub fn calculate_maker_fee(
     commission_amount: Uint128,
     maker_commission_rate: Decimal,
 ) -> Option<Asset> {
-    let maker_fee: Uint128 = commission_amount.multiply_ratio(maker_commission_rate.numerator(), maker_commission_rate.denominator());
+    let maker_fee: Uint128 = commission_amount.multiply_ratio(
+        maker_commission_rate.numerator(),
+        maker_commission_rate.denominator(),
+    );
     if maker_fee.is_zero() {
         return None;
     }
@@ -880,23 +871,23 @@ pub fn calculate_maker_fee(
 /// * **QueryMsg::Pair {}** Returns information about the pair in an object of type [`PairInfo`].
 ///
 /// * **QueryMsg::Pool {}** Returns information about the amount of assets in the pair contract as
-/// well as the amount of LP tokens issued using an object of type [`PoolResponse`].
+///   well as the amount of LP tokens issued using an object of type [`PoolResponse`].
 ///
 /// * **QueryMsg::Share { amount }** Returns the amount of assets that could be withdrawn from the pool
-/// using a specific amount of LP tokens. The result is returned in a vector that contains objects of type [`Asset`].
+///   using a specific amount of LP tokens. The result is returned in a vector that contains objects of type [`Asset`].
 ///
 /// * **QueryMsg::Simulation { offer_asset }** Returns the result of a swap simulation using a [`SimulationResponse`] object.
 ///
 /// * **QueryMsg::ReverseSimulation { ask_asset }** Returns the result of a reverse swap simulation  using
-/// a [`ReverseSimulationResponse`] object.
+///   a [`ReverseSimulationResponse`] object.
 ///
 /// * **QueryMsg::CumulativePrices {}** Returns information about cumulative prices for the assets in the
-/// pool using a [`CumulativePricesResponse`] object.
+///   pool using a [`CumulativePricesResponse`] object.
 ///
 /// * **QueryMsg::Config {}** Returns the configuration for the pair contract using a [`ConfigResponse`] object.
 ///
 /// * **QueryMsg::AssetBalanceAt { asset_info, block_height }** Returns the balance of the specified asset that was in the pool
-/// just preceeding the moment of the specified block height creation.
+///   just preceeding the moment of the specified block height creation.
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
@@ -993,7 +984,7 @@ pub fn query_simulation(deps: Deps, offer_asset: Asset) -> StdResult<SimulationR
 /// Returns information about a reverse swap simulation in a [`ReverseSimulationResponse`] object.
 ///
 /// * **ask_asset** is the asset to swap to as well as the desired amount of ask
-/// assets to receive from the swap.
+///   assets to receive from the swap.
 pub fn query_reverse_simulation(
     deps: Deps,
     ask_asset: Asset,
@@ -1130,12 +1121,15 @@ pub fn compute_swap(
     // ask_amount = (ask_pool - cp / (offer_pool + offer_amount))
     let cp: Uint256 = offer_pool * ask_pool;
     let return_amount: Uint256 = (Decimal256::from_ratio(ask_pool, 1u8)
-        - Decimal256::from_ratio(cp, offer_pool + offer_amount)).to_uint_ceil();
+        - Decimal256::from_ratio(cp, offer_pool + offer_amount))
+    .to_uint_ceil();
 
     // Calculate spread & commission
-    let spread_amount: Uint256 =
-        offer_amount.multiply_ratio(ask_pool, offer_pool).saturating_sub(return_amount);
-    let commission_amount: Uint256 = return_amount.multiply_ratio(commission_rate.numerator(), commission_rate.denominator());
+    let spread_amount: Uint256 = offer_amount
+        .multiply_ratio(ask_pool, offer_pool)
+        .saturating_sub(return_amount);
+    let commission_amount: Uint256 =
+        return_amount.multiply_ratio(commission_rate.numerator(), commission_rate.denominator());
 
     // The commision (minus the part that goes to the Maker contract) will be absorbed by the pool
     let return_amount: Uint256 = return_amount - commission_amount;
@@ -1174,17 +1168,27 @@ pub fn compute_offer_amount(
             Uint256::from(1u8),
             Uint256::from(
                 ask_pool.checked_sub(
-                    Uint256::from(ask_amount).multiply_ratio(inv_one_minus_commission.numerator(), inv_one_minus_commission.denominator()).try_into()?,
+                    Uint256::from(ask_amount)
+                        .multiply_ratio(
+                            inv_one_minus_commission.numerator(),
+                            inv_one_minus_commission.denominator(),
+                        )
+                        .try_into()?,
                 )?,
             ),
         )
         .checked_sub(offer_pool.into())?
         .try_into()?;
 
-    let before_commission_deduction = Uint256::from(ask_amount).multiply_ratio(inv_one_minus_commission.numerator(), inv_one_minus_commission.denominator());
-    let spread_amount = offer_amount.multiply_ratio(ask_pool, offer_pool)
+    let before_commission_deduction = Uint256::from(ask_amount).multiply_ratio(
+        inv_one_minus_commission.numerator(),
+        inv_one_minus_commission.denominator(),
+    );
+    let spread_amount = offer_amount
+        .multiply_ratio(ask_pool, offer_pool)
         .saturating_sub(before_commission_deduction.try_into()?);
-    let commission_amount = before_commission_deduction.multiply_ratio(commission_rate.numerator(), commission_rate.denominator());
+    let commission_amount = before_commission_deduction
+        .multiply_ratio(commission_rate.numerator(), commission_rate.denominator());
     Ok((offer_amount, spread_amount, commission_amount.try_into()?))
 }
 
@@ -1217,9 +1221,10 @@ pub fn assert_max_spread(
 
     if let Some(belief_price) = belief_price {
         let belief_price = belief_price
-        .inv()
-        .ok_or_else(|| StdError::generic_err("Belief price must not be zero!"))?;
-        let expected_return = offer_amount.multiply_ratio(belief_price.numerator(), belief_price.denominator());
+            .inv()
+            .ok_or_else(|| StdError::generic_err("Belief price must not be zero!"))?;
+        let expected_return =
+            offer_amount.multiply_ratio(belief_price.numerator(), belief_price.denominator());
         let spread_amount = expected_return.saturating_sub(return_amount);
 
         if return_amount < expected_return

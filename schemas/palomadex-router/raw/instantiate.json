@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InstantiateMsg",
+  "description": "This structure holds the parameters used for creating a contract.",
+  "type": "object",
+  "required": [
+    "palomadex_factory"
+  ],
+  "properties": {
+    "palomadex_factory": {
+      "description": "The palomadex factory contract address",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
