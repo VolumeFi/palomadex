@@ -1,6 +1,6 @@
-# Palomadex Core
+# Palomadex Astorport Core
 
-Multi pool type automated market-maker (AMM) protocol powered by smart contracts on the Palomachain.
+Multi pool type automated market-maker (AMM) protocol powered by smart contracts on the Palomachain as a fork of Astroport.
 
 ## General Contracts
 
