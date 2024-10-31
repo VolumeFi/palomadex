@@ -1,4 +1,4 @@
-# Palomadex Astorport Core
+# Palomadex Astroport Core
 
 Multi pool type automated market-maker (AMM) protocol powered by smart contracts on the Palomachain as a fork of Astroport.
 
