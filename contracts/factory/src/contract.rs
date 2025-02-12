@@ -44,6 +44,7 @@ pub fn instantiate(
         generator_address: None,
         whitelist_code_id: msg.whitelist_code_id,
         coin_registry_address: deps.api.addr_validate(&msg.coin_registry_address)?,
+        bonding_curve_factory_address: None,
     };
 
     config.generator_address = addr_opt_validate(deps.api, &msg.generator_address)?;
@@ -83,6 +84,7 @@ pub struct UpdateConfig {
     /// CW1 whitelist contract code id used to store 3rd party staking rewards
     whitelist_code_id: Option<u64>,
     coin_registry_address: Option<String>,
+    bonding_curve_factory_address: Option<String>,
 }
 
 /// Exposes all the execute functions available in the contract.
@@ -126,6 +128,7 @@ pub fn execute(
             generator_address,
             whitelist_code_id,
             coin_registry_address,
+            bonding_curve_factory_address,
         } => execute_update_config(
             deps,
             info,
@@ -135,6 +138,7 @@ pub fn execute(
                 generator_address,
                 whitelist_code_id,
                 coin_registry_address,
+                bonding_curve_factory_address,
             },
         ),
         ExecuteMsg::UpdatePairConfig { config } => execute_update_pair_config(deps, info, config),
@@ -218,6 +222,11 @@ pub fn execute_update_config(
         config.coin_registry_address = deps.api.addr_validate(&coin_registry_address)?;
     }
 
+    if let Some(bonding_curve_factory_address) = param.bonding_curve_factory_address {
+        config.bonding_curve_factory_address =
+            Some(deps.api.addr_validate(&bonding_curve_factory_address)?);
+    }
+
     CONFIG.save(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("action", "update_config"))
@@ -273,6 +282,20 @@ pub fn execute_create_pair(
     check_asset_infos(deps.api, &asset_infos)?;
 
     let config = CONFIG.load(deps.storage)?;
+    if let Some(bonding_curve_factory_address) = config.bonding_curve_factory_address {
+        if !asset_infos.iter().all(|asset_info| {
+            if let AssetInfo::NativeToken { denom } = asset_info {
+                if info.sender != bonding_curve_factory_address
+                    && denom.contains(bonding_curve_factory_address.to_string().as_str())
+                {
+                    return false;
+                }
+            }
+            true
+        }) {
+            return Err(ContractError::Unauthorized {});
+        }
+    }
 
     if PAIRS.has(deps.storage, &pair_key(&asset_infos)) {
         return Err(ContractError::PairWasCreated {});
@@ -439,6 +462,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         generator_address: config.generator_address,
         whitelist_code_id: config.whitelist_code_id,
         coin_registry_address: config.coin_registry_address,
+        bonding_curve_factory_address: config.bonding_curve_factory_address,
     };
 
     Ok(resp)

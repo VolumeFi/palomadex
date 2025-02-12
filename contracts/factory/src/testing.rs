@@ -183,6 +183,7 @@ fn update_config() {
         generator_address: Some(String::from("new_generator_addr")),
         whitelist_code_id: None,
         coin_registry_address: None,
+        bonding_curve_factory_address: None,
     };
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -211,6 +212,7 @@ fn update_config() {
         generator_address: None,
         whitelist_code_id: None,
         coin_registry_address: None,
+        bonding_curve_factory_address: None,
     };
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap_err();

@@ -22,6 +22,8 @@ pub struct Config {
     pub whitelist_code_id: u64,
     /// The address of the contract that contains the coins with their precision
     pub coin_registry_address: Addr,
+
+    pub bonding_curve_factory_address: Option<Addr>,
 }
 
 /// This enum describes available pair types.
@@ -122,6 +124,8 @@ pub enum ExecuteMsg {
         whitelist_code_id: Option<u64>,
         /// The address of the contract that contains the coins and their accuracy
         coin_registry_address: Option<String>,
+
+        bonding_curve_factory_address: Option<String>,
     },
     /// UpdatePairConfig updates the config for a pair type.
     UpdatePairConfig {
@@ -205,6 +209,8 @@ pub struct ConfigResponse {
     pub whitelist_code_id: u64,
     /// The address of the contract that contains the coins and their accuracy
     pub coin_registry_address: Addr,
+
+    pub bonding_curve_factory_address: Option<Addr>,
 }
 
 /// A custom struct for each query response that returns an array of objects of type [`PairInfo`].
