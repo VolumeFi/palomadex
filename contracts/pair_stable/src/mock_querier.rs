@@ -100,6 +100,7 @@ impl WasmMockQuerier {
                                 whitelist_code_id: 0,
                                 coin_registry_address: Addr::unchecked("coin_registry"),
                                 bonding_curve_factory_address: None,
+                                pusd_denom: None,
                             })
                             .into(),
                         ),
@@ -168,6 +169,7 @@ impl WasmMockQuerier {
                                 whitelist_code_id: 0,
                                 coin_registry_address: Addr::unchecked("coin_registry"),
                                 bonding_curve_factory_address: None,
+                                pusd_denom: None,
                             })
                             .into(),
                         )
