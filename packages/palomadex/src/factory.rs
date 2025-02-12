@@ -24,6 +24,8 @@ pub struct Config {
     pub coin_registry_address: Addr,
 
     pub bonding_curve_factory_address: Option<Addr>,
+
+    pub pusd_denom: Option<String>,
 }
 
 /// This enum describes available pair types.
@@ -126,6 +128,8 @@ pub enum ExecuteMsg {
         coin_registry_address: Option<String>,
 
         bonding_curve_factory_address: Option<String>,
+
+        pusd_denom: Option<String>,
     },
     /// UpdatePairConfig updates the config for a pair type.
     UpdatePairConfig {
@@ -211,6 +215,8 @@ pub struct ConfigResponse {
     pub coin_registry_address: Addr,
 
     pub bonding_curve_factory_address: Option<Addr>,
+
+    pub pusd_denom: Option<String>,
 }
 
 /// A custom struct for each query response that returns an array of objects of type [`PairInfo`].

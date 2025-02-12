@@ -102,6 +102,7 @@ impl FactoryHelper {
         whitelist_code_id: Option<u64>,
         coin_registry_address: Option<String>,
         bonding_curve_factory_address: Option<String>,
+        pusd_denom: Option<String>,
     ) -> AnyResult<AppResponse> {
         let msg = palomadex::factory::ExecuteMsg::UpdateConfig {
             token_code_id,
@@ -110,6 +111,7 @@ impl FactoryHelper {
             whitelist_code_id,
             coin_registry_address,
             bonding_curve_factory_address,
+            pusd_denom,
         };
 
         router.execute_contract(sender.clone(), self.factory.clone(), &msg, &[])

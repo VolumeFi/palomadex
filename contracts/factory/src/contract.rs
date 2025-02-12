@@ -45,6 +45,7 @@ pub fn instantiate(
         whitelist_code_id: msg.whitelist_code_id,
         coin_registry_address: deps.api.addr_validate(&msg.coin_registry_address)?,
         bonding_curve_factory_address: None,
+        pusd_denom: None,
     };
 
     config.generator_address = addr_opt_validate(deps.api, &msg.generator_address)?;
@@ -85,6 +86,7 @@ pub struct UpdateConfig {
     whitelist_code_id: Option<u64>,
     coin_registry_address: Option<String>,
     bonding_curve_factory_address: Option<String>,
+    pusd_denom: Option<String>,
 }
 
 /// Exposes all the execute functions available in the contract.
@@ -129,6 +131,7 @@ pub fn execute(
             whitelist_code_id,
             coin_registry_address,
             bonding_curve_factory_address,
+            pusd_denom,
         } => execute_update_config(
             deps,
             info,
@@ -139,6 +142,7 @@ pub fn execute(
                 whitelist_code_id,
                 coin_registry_address,
                 bonding_curve_factory_address,
+                pusd_denom,
             },
         ),
         ExecuteMsg::UpdatePairConfig { config } => execute_update_pair_config(deps, info, config),
@@ -227,6 +231,10 @@ pub fn execute_update_config(
             Some(deps.api.addr_validate(&bonding_curve_factory_address)?);
     }
 
+    if let Some(pusd_denom) = param.pusd_denom {
+        config.pusd_denom = Some(pusd_denom);
+    }
+
     CONFIG.save(deps.storage, &config)?;
 
     Ok(Response::new().add_attribute("action", "update_config"))
@@ -282,13 +290,29 @@ pub fn execute_create_pair(
     check_asset_infos(deps.api, &asset_infos)?;
 
     let config = CONFIG.load(deps.storage)?;
+    let mut auth_flag: bool = true;
     if let Some(bonding_curve_factory_address) = config.bonding_curve_factory_address {
         if !asset_infos.iter().all(|asset_info| {
             if let AssetInfo::NativeToken { denom } = asset_info {
                 if info.sender != bonding_curve_factory_address
                     && denom.contains(bonding_curve_factory_address.to_string().as_str())
                 {
-                    return false;
+                    if auth_flag {
+                        auth_flag = false;
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+                if let Some(pusd_denom) = &config.pusd_denom {
+                    if denom.contains(pusd_denom) {
+                        if auth_flag {
+                            auth_flag = false;
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
                 }
             }
             true
@@ -463,6 +487,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
         whitelist_code_id: config.whitelist_code_id,
         coin_registry_address: config.coin_registry_address,
         bonding_curve_factory_address: config.bonding_curve_factory_address,
+        pusd_denom: config.pusd_denom,
     };
 
     Ok(resp)

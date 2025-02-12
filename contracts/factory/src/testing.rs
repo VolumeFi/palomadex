@@ -184,6 +184,7 @@ fn update_config() {
         whitelist_code_id: None,
         coin_registry_address: None,
         bonding_curve_factory_address: None,
+        pusd_denom: None,
     };
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -213,6 +214,7 @@ fn update_config() {
         whitelist_code_id: None,
         coin_registry_address: None,
         bonding_curve_factory_address: None,
+        pusd_denom: None,
     };
 
     let res = execute(deps.as_mut(), env.clone(), info, msg).unwrap_err();
