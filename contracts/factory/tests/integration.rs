@@ -96,6 +96,7 @@ fn update_config() {
             Some("generator".to_string()),
             None,
             None,
+            None,
         )
         .unwrap();
 
@@ -116,6 +117,7 @@ fn update_config() {
         .update_config(
             &mut app,
             &Addr::unchecked("not_owner"),
+            None,
             None,
             None,
             None,
