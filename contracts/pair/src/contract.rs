@@ -9,6 +9,7 @@ use cosmwasm_std::{
     Env, Fraction, MessageInfo, QuerierWrapper, Reply, ReplyOn, Response, StdError, StdResult,
     SubMsg, SubMsgResponse, SubMsgResult, Uint128, Uint256, Uint64, WasmMsg,
 };
+use cw2::set_contract_version;
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg, MinterResponse};
 
 use cw_utils::parse_instantiate_response_data;
@@ -33,6 +34,11 @@ use crate::state::{Config, BALANCES, CONFIG};
 
 /// A `reply` call code ID used for sub-messages.
 const INSTANTIATE_TOKEN_REPLY_ID: u64 = 1;
+
+// version info for migration info
+const CONTRACT_NAME: &str = "crates.io:palomadex-pair";
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -109,6 +115,8 @@ pub fn instantiate(
         gas_limit: None,
         reply_on: ReplyOn::Success,
     }];
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     Ok(Response::new().add_submessages(sub_msg).add_attribute(
         "asset_balances_tracking".to_owned(),

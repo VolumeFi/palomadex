@@ -6,6 +6,7 @@ use cosmwasm_std::{
     attr, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Order, Reply, ReplyOn, Response,
     StdError, StdResult, SubMsg, SubMsgResponse, SubMsgResult, WasmMsg,
 };
+use cw2::set_contract_version;
 use cw_utils::parse_instantiate_response_data;
 use itertools::Itertools;
 
@@ -26,6 +27,10 @@ use crate::state::{
 
 /// A `reply` call code ID used in a sub-message.
 const INSTANTIATE_PAIR_REPLY_ID: u64 = 1;
+
+// version info for migration info
+const CONTRACT_NAME: &str = "crates.io:palomadex-factory";
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Creates a new contract with the specified parameters packed in the `msg` variable.
 ///
@@ -70,6 +75,8 @@ pub fn instantiate(
         PAIR_CONFIGS.save(deps.storage, pc.pair_type.to_string(), pc)?;
     }
     CONFIG.save(deps.storage, &config)?;
+
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     Ok(Response::new())
 }
