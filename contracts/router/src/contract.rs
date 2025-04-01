@@ -2,6 +2,7 @@ use cosmwasm_std::{
     entry_point, from_json, to_json_binary, wasm_execute, Addr, Api, Binary, Decimal, Deps,
     DepsMut, Env, MessageInfo, Reply, Response, StdError, StdResult, SubMsg, SubMsgResult, Uint128,
 };
+use cw2::set_contract_version;
 use cw20::Cw20ReceiveMsg;
 
 use palomadex::asset::{addr_opt_validate, Asset, AssetInfo};
@@ -18,6 +19,10 @@ use crate::state::{Config, ReplyData, CONFIG, REPLY_DATA};
 
 pub const AFTER_SWAP_REPLY_ID: u64 = 1;
 
+// version info for migration info
+const CONTRACT_NAME: &str = "crates.io:palomadex-router";
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 /// Creates a new contract with the specified parameters in the [`InstantiateMsg`].
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -32,7 +37,7 @@ pub fn instantiate(
             palomadex_factory: deps.api.addr_validate(&msg.palomadex_factory)?,
         },
     )?;
-
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
 

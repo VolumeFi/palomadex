@@ -25,6 +25,7 @@ overflow-checks = true
 cosmwasm-schema = "1.5"
 cosmwasm-std = "1.5"
 cw-storage-plus = "1.2"
+cw2 = "1.1.2"
 cw20 = "1.1.2"
 cw-utils = "1.0.3"
 itertools = "0.13.0"
